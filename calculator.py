@@ -294,30 +294,32 @@ class Example(wx.Frame):
     def rescan_serial_ports(self, event):
         self.com = newport()  # Get the list of available serial ports
     def parse_data(self):
-        
-        # If the serial data starts with "@ GPS_STAT", parse and print the data
+        # If the serial data starts with "@ GPS_STAT", parse the data
         self.data = ""
         self.stat = "@ GPS_STAT"
-        print(self.data)
-    # If the serial data starts with "@ GPS_STAT", parse and print the data
+        parsed_data = {}
+
         if self.data.startswith(self.stat):
-            self.timeindex = self.data.index(':')
-            self.altindex = self.data.index('Alt')
-            self.latindex = self.data.index('+')
-            self.longindex = self.data.index('ln')
-            self.velindex = self.data.index('Vel')
+            timeindex = self.data.index(':')
+            altindex = self.data.index('Alt')
+            latindex = self.data.index('+')
+            longindex = self.data.index('ln')
+            velindex = self.data.index('Vel')
 
-            self.time = self.data[self.timeindex - 2: self.timeindex + 9]
-            self.alt = self.data[self.altindex + 4: self.latindex - 4]
-            self.lat = self.data[self.latindex: self.longindex - 1]
-            self.long = self.data[self.longindex + 3: self.velindex - 1]
-            self.hvel = self.data[self.velindex + 4:self.velindex + 9]
-            self.hhead = self.data[self.velindex + 10: self.velindex + 14]
-            self.uvel = self.data[self.velindex + 15: self.velindex + 20]
+            parsed_data['time'] = self.data[timeindex - 2: timeindex + 9]
+            parsed_data['alt'] = self.data[altindex + 4: latindex - 4]
+            parsed_data['lat'] = self.data[latindex: longindex - 1]
+            parsed_data['long'] = self.data[longindex + 3: velindex - 1]
+            parsed_data['hvel'] = self.data[velindex + 4:velindex + 9]
+            parsed_data['hhead'] = self.data[velindex + 10: velindex + 14]
+            parsed_data['uvel'] = self.data[velindex + 15: velindex + 20]
+            #print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
+            return parsed_data
 
-            print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
+            
     def update_calculations(self):
-        self.parse_data()
+        parsed_data = self.parse_data()
+
         self.stat_alt_B = self.Altitude_textB.GetValue()   
         self.stat_lat_B = self.latitude_textB.GetValue() 
         self.stat_long_B = self.longitude_textB.GetValue() 
@@ -337,9 +339,9 @@ class Example(wx.Frame):
             self.lat_B = self.stat_lat_B
             self.long_B = self.stat_long_B
         else:
-            self.alt_B = self.alt
-            self.lat_B = self.lat
-            self.long_B = self.long
+            self.alt_B = parsed_data['alt']
+            self.lat_B = parsed_data['lat']
+            self.long_B = parsed_data['long']
         alt_A = self.alt_A
         lat_A = self.lat_A
         long_A = self.long_A
