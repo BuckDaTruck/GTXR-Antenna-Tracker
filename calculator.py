@@ -293,32 +293,31 @@ class Example(wx.Frame):
         print("Home")
     def rescan_serial_ports(self, event):
         self.com = newport()  # Get the list of available serial ports
+    def parse_data(self):
+        
+        # If the serial data starts with "@ GPS_STAT", parse and print the data
+        self.data = ""
+        self.stat = "@ GPS_STAT"
+        print(self.data)
+    # If the serial data starts with "@ GPS_STAT", parse and print the data
+        if self.data.startswith(self.stat):
+            self.timeindex = self.data.index(':')
+            self.altindex = self.data.index('Alt')
+            self.latindex = self.data.index('+')
+            self.longindex = self.data.index('ln')
+            self.velindex = self.data.index('Vel')
 
+            self.time = self.data[self.timeindex - 2: self.timeindex + 9]
+            self.alt = self.data[self.altindex + 4: self.latindex - 4]
+            self.lat = self.data[self.latindex: self.longindex - 1]
+            self.long = self.data[self.longindex + 3: self.velindex - 1]
+            self.hvel = self.data[self.velindex + 4:self.velindex + 9]
+            self.hhead = self.data[self.velindex + 10: self.velindex + 14]
+            self.uvel = self.data[self.velindex + 15: self.velindex + 20]
+
+            print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
     def update_calculations(self):
-        data = self.ser_feather.readline()
-
-#if the serial data starts with "@ GPS_STAT", write the line to a new FilteredData file
-        if data.startswith(stat):
-            with open("FilteredData", "a") as fd:
-                fd.write(data.decode('latin-1'))
-                #read from the filtered data and write the relevant data to a CSV file
-            with open("FilteredData", "r") as fd2:
-                line = fd2.readlines()
-                last_line = line[-1]
-                timeindex = last_line.index(':')
-                altindex = last_line.index('Alt')
-                latindex = last_line.index('+')
-                longindex = last_line.index('ln')
-                velindex = last_line.index('Vel')
-
-                time = last_line[timeindex - 2: timeindex + 9]
-                alt = last_line[altindex + 4: latindex - 4]
-                lat = last_line[latindex : longindex - 1]
-                long = last_line[longindex + 3: velindex - 1]
-                hvel = last_line[velindex + 4: velindex + 9]
-                hhead = last_line[velindex + 10:velindex + 14]
-                uvel = last_line[velindex + 15: velindex + 20]
-        print("Alt",alt,"Lat", lat,"Long", long,"Hvel", hvel,"Hhead", hhead,"Uvel", uvel)
+        self.parse_data()
         self.stat_alt_B = self.Altitude_textB.GetValue()   
         self.stat_lat_B = self.latitude_textB.GetValue() 
         self.stat_long_B = self.longitude_textB.GetValue() 
@@ -338,9 +337,9 @@ class Example(wx.Frame):
             self.lat_B = self.stat_lat_B
             self.long_B = self.stat_long_B
         else:
-            self.alt_B = alt
-            self.lat_B = lat
-            self.long_B = long
+            self.alt_B = self.alt
+            self.lat_B = self.lat
+            self.long_B = self.long
         alt_A = self.alt_A
         lat_A = self.lat_A
         long_A = self.long_A
