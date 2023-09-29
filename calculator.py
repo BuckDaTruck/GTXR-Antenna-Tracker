@@ -3,7 +3,8 @@ import serial.tools.list_ports
 import math
 import serial
 import struct
-
+import tkinter as tk
+import math
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
 POLAR_RADIUS_FEET = 20855567.585
@@ -36,12 +37,11 @@ statB = False
 
 # Initialize the 'sat' list outside the 'newport' function
 sat = ["none"]
-
+stat = bytes("@ GPS_STAT", encoding="latin-1")
 # Define the 'com' list at the global scope
 com = ["Select Port"]
 
-import tkinter as tk
-import math
+
 
 def parse_angle(angle_str, limit):
     try:
@@ -215,20 +215,22 @@ class Example(wx.Frame):
 
         self.InitUI()
 
+
     def InitUI(self):
         font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         pnl = wx.Panel(self)
 
         newport()
-        Ground = wx.ComboBox(pnl, pos=(20, 30), choices=com, style=wx.CB_READONLY)
-        Ground.Bind(wx.EVT_COMBOBOX, self.select_serial_port)
+        self.Ground = wx.ComboBox(pnl, pos=(20, 30), choices=self.com, style=wx.CB_READONLY)
+        self.Ground.Bind(wx.EVT_COMBOBOX, self.select_serial_port)
 
-        Feather = wx.ComboBox(pnl, pos=(20, 80), choices=com, style=wx.CB_READONLY)
+        self.Feather = wx.ComboBox(pnl, pos=(20, 80), choices=self.com, style=wx.CB_READONLY)
+        self.Feather.Bind(wx.EVT_COMBOBOX, self.OnFeather)
         self.staticA = wx.CheckBox(pnl, label='Static', pos=(150, 10))
         self.staticA.Bind(wx.EVT_CHECKBOX, self.OnStaticA)
         self.staticB = wx.CheckBox(pnl, label='Static', pos=(150, 60))
         self.staticB.Bind(wx.EVT_CHECKBOX, self.OnStaticB)
-        Feather.Bind(wx.EVT_COMBOBOX, self.OnFeather)
+       
 
         self.Ground = wx.StaticText(pnl, label='', pos=(20, 140))
         self.Feather = wx.StaticText(pnl, label='', pos=(20, 160))
@@ -275,6 +277,9 @@ class Example(wx.Frame):
         btn = wx.Button(self, label='Exit', pos=(20, 340))
         self.Home = wx.Button(self, label="Home", pos=(200, 340))
         self.Bind(wx.EVT_BUTTON, self.on_home_click, self.Home)
+        self.RescanButton = wx.Button(self, label="Rescan", pos=(300, 340))
+        self.Bind(wx.EVT_BUTTON, self.rescan_serial_ports, self.RescanButton)
+
 
         self.Centre()
         self.Show(True)
@@ -285,10 +290,62 @@ class Example(wx.Frame):
 
     def on_home_click(self, event):
         print("Home")
+    def rescan_serial_ports(self, event):
+        """Rescan for available serial ports."""
+        global com
+        ports = list(serial.tools.list_ports.comports())
+        com = ["Select Port"]
+        for i, port in enumerate(ports):
+            print(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
+            com.append(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
 
+        self.Ground.SetItems(com)
+        self.Feather.SetItems(com)
+
+        
     def update_calculations(self):
-        # Calculate and update values here
-        pass
+        
+        self.stat_alt_B = self.Altitude_textB.GetValue()   
+        self.stat_lat_B = self.latitude_textB.GetValue() 
+        self.stat_long_B = self.longitude_textB.GetValue() 
+        self.stat_alt_A = self.Altitude_textA.GetValue()   
+        self.stat_lat_A = self.latitude_textA.GetValue() 
+        self.stat_long_A = self.longitude_textA.GetValue()
+        if self.statA:
+            self.alt_A = self.stat_alt_A
+            self.lat_A = self.stat_lat_A
+            self.long_A = self.stat_long_A
+        else:
+            self.alt_A = 0
+            self.lat_A = 0
+            self.long_A = 0
+        if self.statB:
+            self.alt_B = self.stat_alt_B
+            self.lat_B = self.stat_lat_B
+            self.long_B = self.stat_long_B
+        else:
+            self.alt_B = alt
+            self.lat_B = lat
+            self.long_B = long
+        alt_A = self.alt_A
+        lat_A = self.lat_A
+        long_A = self.long_A
+        alt_B = self.alt_B
+        lat_B = self.lat_B
+        long_B = self.long_B
+        calculate(lat_A, long_A, alt_A, lat_B, long_B, alt_B)
+        self.DistanceLabel.SetLabel(f"Distance: {Distances:.3f} Miles")
+        self.AzimuthLabel.SetLabel(f"Azimuth: {Azimuth:.4f}°")
+        self.AltitudeLabel.SetLabel(f"Altitude: {Altitude:.4f}°")
+        azimuth_byte = Azimuth
+        altitude_byte = Altitude
+        # Convert float values to bytes
+        Azimuth_bytes = struct.pack('f',  azimuth_byte)
+        Altitude_bytes = struct.pack('f', altitude_byte)
+
+        # Send the bytes over serial
+        self.ser.write(Altitude_bytes)
+        self.ser.write(Azimuth_bytes)
 
     def open_serial_port(self):
         if self.selected_serial_port is not None:
@@ -358,7 +415,6 @@ def main():
     ex = wx.App()
     Example(ser, ser_feather, com, None)
     ex.MainLoop()
-    calculate()
 
 
 if __name__ == '__main__':
