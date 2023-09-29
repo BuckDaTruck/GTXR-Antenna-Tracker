@@ -3,8 +3,7 @@ import serial.tools.list_ports
 import math
 import serial
 import struct
-import tkinter as tk
-import math
+
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
 POLAR_RADIUS_FEET = 20855567.585
@@ -215,6 +214,8 @@ class Example(wx.Frame):
 
         self.InitUI()
 
+        # Rescan for serial ports
+
 
     def InitUI(self):
         font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
@@ -291,24 +292,37 @@ class Example(wx.Frame):
     def on_home_click(self, event):
         print("Home")
     def rescan_serial_ports(self, event):
-        """Rescan for available serial ports."""
-        global com
-        ports = list(serial.tools.list_ports.comports())
-        com = ["Select Port"]
-        for i, port in enumerate(ports):
-            print(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
-            com.append(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
+        self.com = newport()  # Get the list of available serial ports
 
-        self.Ground.SetItems(com)
-        self.Feather.SetItems(com)
-
-        
     def update_calculations(self):
-        
+        data = self.ser_feather.readline()
+
+#if the serial data starts with "@ GPS_STAT", write the line to a new FilteredData file
+        if data.startswith(stat):
+            with open("FilteredData", "a") as fd:
+                fd.write(data.decode('latin-1'))
+                #read from the filtered data and write the relevant data to a CSV file
+            with open("FilteredData", "r") as fd2:
+                line = fd2.readlines()
+                last_line = line[-1]
+                timeindex = last_line.index(':')
+                altindex = last_line.index('Alt')
+                latindex = last_line.index('+')
+                longindex = last_line.index('ln')
+                velindex = last_line.index('Vel')
+
+                time = last_line[timeindex - 2: timeindex + 9]
+                alt = last_line[altindex + 4: latindex - 4]
+                lat = last_line[latindex : longindex - 1]
+                long = last_line[longindex + 3: velindex - 1]
+                hvel = last_line[velindex + 4: velindex + 9]
+                hhead = last_line[velindex + 10:velindex + 14]
+                uvel = last_line[velindex + 15: velindex + 20]
+        print("Alt",alt,"Lat", lat,"Long", long,"Hvel", hvel,"Hhead", hhead,"Uvel", uvel)
         self.stat_alt_B = self.Altitude_textB.GetValue()   
         self.stat_lat_B = self.latitude_textB.GetValue() 
         self.stat_long_B = self.longitude_textB.GetValue() 
-        self.stat_alt_A = self.Altitude_textA.GetValue()   
+        self.stat_alt_A = self.Altitude_textA.GetValue()  
         self.stat_lat_A = self.latitude_textA.GetValue() 
         self.stat_long_A = self.longitude_textA.GetValue()
         if self.statA:
