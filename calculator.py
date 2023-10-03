@@ -40,9 +40,17 @@ stat = bytes("@ GPS_STAT", encoding="latin-1")
 # Define the 'com' list at the global scope
 com = ["Select Port"]
 
-
-
 def parse_angle(angle_str, limit):
+    """
+    Parses an angle string and returns the angle as a float if it is within the specified limit.
+
+    Args:
+        angle_str (str): The angle string to parse.
+        limit (float): The limit within which the angle must be.
+
+    Returns:
+        float or None: The parsed angle as a float if it is within the limit, or None if it is not.
+    """
     try:
         angle = float(angle_str)
         if math.isnan(angle) or (angle < -limit) or (angle > limit):
@@ -53,20 +61,40 @@ def parse_angle(angle_str, limit):
     except ValueError:
         print("Invalid angle value. Please enter a numeric value.")
         return None
+    
 def parse_elevation(elevation_str):
+    """
+    Parses the given elevation string and returns the elevation in feet.
+
+    Args:
+        elevation_str (str): The string representation of the elevation.
+
+    Returns:
+        float: The elevation in feet if the string is a valid numeric value, otherwise None.
+    """
     try:
         elevation_feet = float(elevation_str)
         if math.isnan(elevation_feet):
             print("Invalid elevation value.")
             return None
         else:
-         
-            return  elevation_feet
+            return elevation_feet
     except ValueError:
         print("Invalid elevation value. Please enter a numeric value.")
         return None
 
 def parse_location(lati, long, alt):
+    """
+    Parses the latitude, longitude, and altitude strings and returns a dictionary containing the parsed values.
+
+    Args:
+        lati (str): The latitude string.
+        long (str): The longitude string.
+        alt (str): The altitude string.
+
+    Returns:
+        dict: A dictionary containing the parsed latitude, longitude, and altitude values. Returns None if any of the strings cannot be parsed.
+    """
     lat_str = lati
     lon_str = long
     elv_str = alt
@@ -83,6 +111,15 @@ def parse_location(lati, long, alt):
     return None
 
 def earth_radius_in_feet(latitude_radians):
+    """
+    Calculates the radius of the earth in feet at a given latitude.
+
+    Args:
+        latitude_radians (float): The latitude in radians.
+
+    Returns:
+        float: The radius of the earth in feet at the given latitude.
+    """
     a = 20925721.785  # equatorial radius in feet
     b = 20855567.585  # polar radius in feet
     cos = math.cos(latitude_radians)
@@ -94,11 +131,29 @@ def earth_radius_in_feet(latitude_radians):
     return math.sqrt((t1 * t1 + t2 * t2) / (t3 * t3 + t4 * t4))
 
 def geocentric_latitude(lat):
+    """
+    Calculates the geocentric latitude from the given geodetic latitude.
+
+    Args:
+        lat (float): The geodetic latitude in radians.
+
+    Returns:
+        float: The geocentric latitude in radians.
+    """
     e2 = 0.00669437999014
     clat = math.atan((1.0 - e2) * math.tan(lat))
     return clat
 
 def location_to_point(c):
+    """
+    Converts a location on Earth to a point in 3D space.
+
+    Args:
+        c (dict): A dictionary containing the latitude, longitude, and elevation of the location.
+
+    Returns:
+        dict: A dictionary containing the x, y, and z coordinates of the point, as well as the radius of the Earth at that location and the normal vector of the point.
+    """
     lat = c['lat'] * math.pi / 180.0
     lon = c['lon'] * math.pi / 180.0
     radius = earth_radius_in_feet(lat)
@@ -121,12 +176,34 @@ def location_to_point(c):
     return {'x': x, 'y': y, 'z': z, 'radius': radius, 'nx': nx, 'ny': ny, 'nz': nz}
 
 def distance(ap, bp):
+    """
+    Calculates the Euclidean distance between two points in 3D space.
+
+    Args:
+        ap (dict): A dictionary representing the coordinates of the first point.
+        bp (dict): A dictionary representing the coordinates of the second point.
+
+    Returns:
+        float: The Euclidean distance between the two points.
+    """
     dx = ap['x'] - bp['x']
     dy = ap['y'] - bp['y']
     dz = ap['z'] - bp['z']
     return math.sqrt(dx * dx + dy * dy + dz * dz)
 
 def rotate_globe(b, a, bradius, aradius):
+    """
+    Rotate a point on the surface of a sphere around another point on the surface of the same sphere.
+
+    Args:
+        b (dict): A dictionary representing the point to be rotated, with keys 'lat', 'lon', and 'elv'.
+        a (dict): A dictionary representing the point around which to rotate, with keys 'lat', 'lon', and 'elv'.
+        bradius (float): The radius of the sphere at the point to be rotated.
+        aradius (float): The radius of the sphere at the point around which to rotate.
+
+    Returns:
+        dict: A dictionary representing the rotated point, with keys 'x', 'y', 'z', and 'radius'.
+    """
     br = {'lat': b['lat'], 'lon': (b['lon'] - a['lon']), 'elv': b['elv']}
     brp = location_to_point(br)
     alat = geocentric_latitude(-a['lat'] * math.pi / 180.0)
@@ -138,6 +215,18 @@ def rotate_globe(b, a, bradius, aradius):
     return {'x': bx, 'y': by, 'z': bz, 'radius': bradius}
 
 def normalize_vector_diff(b, a):
+    """
+    Calculates the normalized vector difference between two points in 3D space.
+
+    Args:
+        b (dict): A dictionary representing the second point in 3D space with keys 'x', 'y', and 'z'.
+        a (dict): A dictionary representing the first point in 3D space with keys 'x', 'y', and 'z'.
+
+    Returns:
+        dict: A dictionary representing the normalized vector difference between the two points with keys 'x', 'y', 'z', and 'radius'.
+              The 'x', 'y', and 'z' keys represent the normalized vector components, and the 'radius' key represents the magnitude of the vector.
+              Returns None if the two points are the same.
+    """
     dx = b['x'] - a['x']
     dy = b['y'] - a['y']
     dz = b['z'] - a['z']
@@ -187,10 +276,13 @@ def calculate(lat_A, long_A, alt_A, lat_B, long_B, alt_B):
                 Altitude = altitude_deg
                 print(f"Altitude: {altitude_deg:.4f}°")
 
-
-
-
 def newport():
+    """
+    Lists all available serial ports and returns a list of their names.
+
+    Returns:
+        list: A list of available serial ports.
+    """
     global com
     ports = list(serial.tools.list_ports.comports())
     com = ["Select Port"]
@@ -199,6 +291,51 @@ def newport():
         com.append(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
     return com  # Return the list of available serial ports
 
+class Example(wx.Frame):
+    """
+    A class that represents the main window of the Antenna Tracker application.
+
+    Attributes:
+    alt_A (int): The altitude of point A.
+    lat_A (int): The latitude of point A.
+    long_A (int): The longitude of point A.
+    alt_B (int): The altitude of point B.
+    lat_B (int): The latitude of point B.
+    long_B (int): The longitude of point B.
+    ser (serial.Serial): The serial port object for the ground station.
+    ser_feather (serial.Serial): The serial port object for the Featherweight GPS.
+    com (list): A list of available serial ports.
+    """
+
+    def __init__(self, ser, ser_feather, com, *args, **kw):
+        """
+        Initializes the Example object.
+
+        Parameters:
+        ser (serial.Serial): The serial port object for the ground station.
+        ser_feather (serial.Serial): The serial port object for the Featherweight GPS.
+        com (list): A list of available serial ports.
+        *args: Variable length argument list.
+        **kw: Arbitrary keyword arguments.
+        """
+        super(Example, self).__init__(*args, **kw)
+        self.alt_A = 0
+        self.lat_A = 0
+        self.long_A = 0
+        self.alt_B = 0
+        self.lat_B = 0
+        self.long_B = 0
+        self.ser = ser
+        self.ser_feather = ser_feather
+        self.com = com
+
+        self.InitUI()
+
+    def InitUI(self):
+        """
+        Initializes the user interface of the Antenna Tracker application.
+        """
+        # UI code goes here
 class Example(wx.Frame):
     def __init__(self, ser, ser_feather, com, *args, **kw):
         super(Example, self).__init__(*args, **kw)
@@ -217,6 +354,12 @@ class Example(wx.Frame):
         # Rescan for serial ports
 
 
+    """
+    This module contains a class that initializes the user interface for an Antenna Tracker application. 
+    The UI includes various widgets such as ComboBox, CheckBox, StaticText, TextCtrl, and Button. 
+    The class also defines methods to handle user interactions with the widgets, such as selecting a serial port, 
+    checking/unchecking a checkbox, entering text in a TextCtrl, clicking a button, and closing the application. 
+    """
     def InitUI(self):
         font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         pnl = wx.Panel(self)
@@ -294,30 +437,49 @@ class Example(wx.Frame):
     def rescan_serial_ports(self, event):
         self.com = newport()  # Get the list of available serial ports
     def parse_data(self):
-        # If the serial data starts with "@ GPS_STAT", parse the data
-        self.data = ""
-        self.stat = "@ GPS_STAT"
-        parsed_data = {}
+            """
+            Parses the serial data received from the GPS module and returns a dictionary containing the parsed data.
 
-        if self.data.startswith(self.stat):
-            timeindex = self.data.index(':')
-            altindex = self.data.index('Alt')
-            latindex = self.data.index('+')
-            longindex = self.data.index('ln')
-            velindex = self.data.index('Vel')
+            Returns:
+            dict: A dictionary containing the parsed data with the following keys:
+                - time: The time in the format HH:MM:SS.mmm.
+                - alt: The altitude in meters.
+                - lat: The latitude in decimal degrees.
+                - long: The longitude in decimal degrees.
+                - hvel: The horizontal velocity in meters per second.
+                - hhead: The horizontal heading in degrees.
+                - uvel: The vertical velocity in meters per second.
+            """
+            # If the serial data starts with "@ GPS_STAT", parse the data
+            self.data = ""
+            self.stat = "@ GPS_STAT"
+            parsed_data = {}
 
-            parsed_data['time'] = self.data[timeindex - 2: timeindex + 9]
-            parsed_data['alt'] = self.data[altindex + 4: latindex - 4]
-            parsed_data['lat'] = self.data[latindex: longindex - 1]
-            parsed_data['long'] = self.data[longindex + 3: velindex - 1]
-            parsed_data['hvel'] = self.data[velindex + 4:velindex + 9]
-            parsed_data['hhead'] = self.data[velindex + 10: velindex + 14]
-            parsed_data['uvel'] = self.data[velindex + 15: velindex + 20]
-            #print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
-            return parsed_data
+            if self.data.startswith(self.stat):
+                timeindex = self.data.index(':')
+                altindex = self.data.index('Alt')
+                latindex = self.data.index('+')
+                longindex = self.data.index('ln')
+                velindex = self.data.index('Vel')
+
+                parsed_data['time'] = self.data[timeindex - 2: timeindex + 9]
+                parsed_data['alt'] = self.data[altindex + 4: latindex - 4]
+                parsed_data['lat'] = self.data[latindex: longindex - 1]
+                parsed_data['long'] = self.data[longindex + 3: velindex - 1]
+                parsed_data['hvel'] = self.data[velindex + 4:velindex + 9]
+                parsed_data['hhead'] = self.data[velindex + 10: velindex + 14]
+                parsed_data['uvel'] = self.data[velindex + 15: velindex + 20]
+                #print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
+                return parsed_data
 
             
     def update_calculations(self):
+        """
+        Updates the calculations for the antenna tracker based on the current values of the GUI inputs.
+        Parses the data and retrieves the latitude, longitude, and altitude values for both antennas.
+        Calculates the distance, azimuth, and altitude between the two antennas.
+        Converts the azimuth and altitude values to bytes and sends them over serial.
+        """
         parsed_data = self.parse_data()
 
         self.stat_alt_B = self.Altitude_textB.GetValue()   
@@ -420,8 +582,11 @@ class Example(wx.Frame):
             self.ser.close()
         self.Close(True)
 
-
 def main():
+    """
+    Initializes serial ports for communication with the antenna tracker and Feather board, 
+    gets the list of available serial ports, and starts the GUI application.
+    """
     selected_serial_port = None
     selected_serial_port_feather = None  # Initialize Feather serial port
     ser = serial.Serial(selected_serial_port, 115200)
@@ -430,7 +595,6 @@ def main():
     ex = wx.App()
     Example(ser, ser_feather, com, None)
     ex.MainLoop()
-
 
 if __name__ == '__main__':
     main()
