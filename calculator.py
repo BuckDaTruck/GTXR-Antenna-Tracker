@@ -350,7 +350,7 @@ class Example(wx.Frame):
         self.com = com
 
         self.InitUI()
-
+        
         # Rescan for serial ports
 
 
@@ -363,6 +363,7 @@ class Example(wx.Frame):
     def InitUI(self):
         font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         pnl = wx.Panel(self)
+       
 
         newport()
         self.Ground = wx.ComboBox(pnl, pos=(20, 30), choices=self.com, style=wx.CB_READONLY)
@@ -421,7 +422,7 @@ class Example(wx.Frame):
         btn = wx.Button(self, label='Exit', pos=(20, 340))
         self.Home = wx.Button(self, label="Home", pos=(200, 340))
         self.Bind(wx.EVT_BUTTON, self.on_home_click, self.Home)
-        self.RescanButton = wx.Button(self, label="Rescan", pos=(300, 340))
+        self.RescanButton = wx.Button(self, label="Rescan", pos=(290, 340))
         self.Bind(wx.EVT_BUTTON, self.rescan_serial_ports, self.RescanButton)
 
 
@@ -435,7 +436,17 @@ class Example(wx.Frame):
     def on_home_click(self, event):
         print("Home")
     def rescan_serial_ports(self, event):
-        self.com = newport()  # Get the list of available serial ports
+        available_ports = newport()  # Get the list of available serial ports
+
+        # Update the list of available serial ports in the GUI
+        self.serial_port_choice.Clear()
+        self.serial_port_choice.AppendItems(available_ports)
+
+        # If the currently selected serial port is still available, select it
+        if self.com in available_ports:
+            self.serial_port_choice.SetStringSelection(self.com)
+        else:
+            self.com = None  # Clear the selected serial port if it is no longer available
     def parse_data(self):
             """
             Parses the serial data received from the GPS module and returns a dictionary containing the parsed data.
