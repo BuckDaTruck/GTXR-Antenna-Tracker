@@ -2,7 +2,8 @@
 
 Servo servo1;
 Servo servo2;
-
+float value1 = 0.0;
+float value2 = 0.0;
 int servo1Pin = 32;
 int servo2Pin = 33;
 
@@ -26,7 +27,7 @@ void loop() {
 
     Serial.readBytes((char *)&value1, sizeof(value1));
     Serial.readBytes((char *)&value2, sizeof(value2));
- =
+ 
     servo1.write(value1);
     servo2.write(value1);
 

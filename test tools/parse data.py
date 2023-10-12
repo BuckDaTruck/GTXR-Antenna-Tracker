@@ -1,7 +1,7 @@
 import serial
 import time
 import csv
-ser = serial.Serial('/dev/cu.usbserial-1', 115200)
+ser = serial.Serial('/dev/cu.usbserial-0001', 115200)
 #ser = serial.Serial('/dev/cu.usbserial-DT03KIUS', 115200)
 stat = bytes("@ GPS_STAT", encoding="latin-1")
 

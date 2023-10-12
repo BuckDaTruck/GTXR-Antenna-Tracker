@@ -3,6 +3,7 @@ import serial.tools.list_ports
 import math
 import serial
 import struct
+import threading
 
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
@@ -364,7 +365,7 @@ class Example(wx.Frame):
         font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         pnl = wx.Panel(self)
        
-
+        
         newport()
         self.Ground = wx.ComboBox(pnl, pos=(20, 30), choices=self.com, style=wx.CB_READONLY)
         self.Ground.Bind(wx.EVT_COMBOBOX, self.select_serial_port)
@@ -432,7 +433,7 @@ class Example(wx.Frame):
 
     def on_button_click(self, event):
         wx.MessageBox("Coded By Buckley Wiley\nbuckley@buckleywiley.com\nGTXR Antena Tracker V1.0", "About")
-
+   
     def on_home_click(self, event):
         print("Home")
     def rescan_serial_ports(self, event):
@@ -513,8 +514,11 @@ class Example(wx.Frame):
             self.long_B = self.stat_long_B
         else:
             self.alt_B = parsed_data['alt']
+            print(parsed_data['alt'])
             self.lat_B = parsed_data['lat']
+            print(parsed_data['lat'])
             self.long_B = parsed_data['long']
+            print(parsed_data['long'])
         alt_A = self.alt_A
         lat_A = self.lat_A
         long_A = self.long_A
@@ -559,13 +563,35 @@ class Example(wx.Frame):
             self.open_serial_port()
             print(f"Selected Serial Port (Ground Station): {self.selected_serial_port}")
 
-    def open_serial_port_feather(self):
-        if self.selected_serial_port_feather is not None:
+    def read_serial_data(self):
+        """
+        Reads the serial data from the Featherweight GPS module and updates the GUI with the new data.
+        """
+        while self.ser_feather.is_open:
             try:
-                self.ser_feather = serial.Serial(self.selected_serial_port_feather, 115200)
-                print("Serial port for Featherweight GPS opened successfully")
-            except Exception as e:
-                print(f"Error opening serial port for Featherweight GPS: {str(e)}")
+                # Read the serial data
+                data = self.ser_feather.readline().decode('utf-8').strip()
+                # Parse the data
+                parsed_data = self.parse_data(data)
+                # Update the GUI with the new data
+                self.update_gui(parsed_data)
+            except serial.SerialException:
+                print("Serial port closed.")
+                break
+
+    def open_serial_port_feather(self):
+        """
+        Opens the serial port for communication with the Featherweight GPS module.
+        """
+        try:
+            self.ser_feather = serial.Serial(self.selected_serial_port_feather, 115200)
+            print(f"Opened Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
+            # Start a new thread to read the serial data in the background
+            self.serial_thread = threading.Thread(target=self.read_serial_data)
+            self.serial_thread.daemon = True
+            self.serial_thread.start()
+        except serial.SerialException:
+            print("Failed to open serial port.")
 
     def OnFeather(self, event):
         selected_index = event.GetSelection()
@@ -588,6 +614,19 @@ class Example(wx.Frame):
         self.Altitude_textB.Enable(self.staticB.GetValue())
         self.statB = self.staticB.GetValue()
 
+    def select_serial_port(self, event):
+        """
+        Handles the selection of a serial port for communication with the Featherweight GPS module.
+        """
+        selected_index = event.GetSelection()
+        if selected_index > 0:
+            ports = list(serial.tools.list_ports.comports())
+            selected_port_info_feather = ports[selected_index - 1]
+            self.selected_serial_port_feather = selected_port_info_feather.device
+            self.open_serial_port_feather()
+            print(f"Selected Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
+            self.rescan_serial_ports(event)  # Call the rescan_serial_ports method
+
     def OnClose(self, e):
         if self.ser.is_open:
             self.ser.close()
@@ -606,6 +645,7 @@ def main():
     ex = wx.App()
     Example(ser, ser_feather, com, None)
     ex.MainLoop()
+    
 
 if __name__ == '__main__':
     main()

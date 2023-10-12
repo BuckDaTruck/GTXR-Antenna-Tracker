@@ -9,8 +9,8 @@ void setup() {
 void loop() {
   // Simulated GPS data with a changing flight path
   float altitude = startingAltitude + 100.0 * sin(millis() / 5000.0);  // Altitude varies sinusoidally
-  float latitude = 0.0 + 0.00001 * sin(millis() / 5000.0);  // Latitude varies sinusoidally
-  float longitude = 0.0 + 0.00001 * cos(millis() / 5000.0);  // Longitude varies cosinusoidally
+  float latitude = 33.0 + 0.001 * sin(millis() / 5000.0);  // Latitude varies sinusoidally
+  float longitude = 33.0 + 0.003 * cos(millis() / 3000.0);  // Longitude varies cosinusoidally
   int velocity = 0 + 1 * sin(millis() / 5000.0);  // Velocity varies sinusoidally
 
   // Format the GPS data as a string
