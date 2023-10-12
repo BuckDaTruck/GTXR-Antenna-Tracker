@@ -1,6 +1,6 @@
-
 const float startingAltitude = 1000.0;  // Define the starting altitude
 const int restartDelay = 5000;  // Delay in milliseconds before restarting the simulation
+unsigned long lastRestartTime = 0; // Track the time of the last restart
 
 void setup() {
   Serial.begin(115200);
@@ -9,26 +9,27 @@ void setup() {
 void loop() {
   // Simulated GPS data with a changing flight path
   float altitude = startingAltitude + 100.0 * sin(millis() / 5000.0);  // Altitude varies sinusoidally
-  float latitude = 40.0 + 0.1 * sin(millis() / 5000.0);  // Latitude varies sinusoidally
-  float longitude = -75.0 + 0.2 * cos(millis() / 5000.0);  // Longitude varies cosinusoidally
-  float velocity = 100.0 + 20.0 * sin(millis() / 5000.0);  // Velocity varies sinusoidally
+  float latitude = 0.0 + 0.00001 * sin(millis() / 5000.0);  // Latitude varies sinusoidally
+  float longitude = 0.0 + 0.00001 * cos(millis() / 5000.0);  // Longitude varies cosinusoidally
+  int velocity = 0 + 1 * sin(millis() / 5000.0);  // Velocity varies sinusoidally
 
-  String gpsData = "@ GPS_STAT:Time:123456.789,Alt:" + String(altitude, 3) +
-                   ",Lat:+" + String(latitude, 4) + ",Long:" + String(longitude, 4) +
-                   ",Vel:" + String(velocity, 2) + ",Hhead:567.89,Uvel:10.0\r\n";
+  // Format the GPS data as a string
+  String gpsData = "@ GPS_STAT 202 0000 00 00 00:04:09.294 CRC_OK TRK FthrWt02427 Alt " +
+                   String(int(altitude), 6) + " lt +" + String(latitude, 8) + " ln +" + String(longitude, 8) +
+                   " Vel " + String(velocity, 4) + " +000 +000 +0000 Fix 0 # 0 0 0 0 000_00_00 000_00_00 000_00_00 000_00_00 000_00_00 CRC: E13A";
 
-  // Send the data over serial
-  Serial.print(gpsData);
+  // Send the data over the Serial interface
+  Serial.println(gpsData);
 
   // Check if the altitude has crossed the starting altitude
   if (altitude >= startingAltitude) {
-    // Delay before restarting the simulation
-    delay(restartDelay);
-
-    // Reset the time (millis) to start the simulation from the beginning
-    millis(0);
+    // Check if it's time to restart the simulation
+    if (millis() - lastRestartTime >= restartDelay) {
+      // Restart the simulation
+      lastRestartTime = millis();
+    }
   }
 
-  // Delay for a while (simulating the GPS data transmission rate)
-  delay(1000); // Adjust the delay as needed
+  // Delay for a while to control the data transmission rate
+  delay(1000);  // Adjust the delay as needed
 }

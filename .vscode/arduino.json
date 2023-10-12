@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "output": ".arduino/output",
+    "sketch": "test tools/esp32servotest/esp32servotest.ino"
+}
