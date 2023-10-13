@@ -1,3 +1,10 @@
+"""
+Author: Buckley Wiley
+Contact: buckley@buckleywiley.com
+GitHub: https://github.com/BuckDaTruck
+Credit: Addapted from Cosine Kittys geocalc javascript code. https://github.com/cosinekitty/geocalc 
+Description: Calculate Azimuth and Altitude for Antenna Tracker from two GPS locations.
+"""
 import wx
 import serial.tools.list_ports
 import math
