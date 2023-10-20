@@ -511,7 +511,6 @@ class Example(wx.Frame):
             self.alt_A = self.stat_alt_A
             self.lat_A = self.stat_lat_A
             self.long_A = self.stat_long_A
-        else:
             self.alt_A = 0
             self.lat_A = 0
             self.long_A = 0
