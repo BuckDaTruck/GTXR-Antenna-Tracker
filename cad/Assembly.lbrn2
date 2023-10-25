@@ -27,10 +27,10 @@
     <CutSetting type="Cut">
         <index Value="0"/>
         <name Value="C00"/>
-        <minPower Value="100"/>
-        <maxPower Value="100"/>
+        <minPower Value="90"/>
+        <maxPower Value="90"/>
         <maxPower2 Value="20"/>
-        <speed Value="5.08"/>
+        <speed Value="4"/>
         <dotTime Value="1"/>
         <dotSpacing Value="0.0004"/>
         <overscan Value="0"/>
