@@ -27,10 +27,10 @@
     <CutSetting type="Cut">
         <index Value="0"/>
         <name Value="C00"/>
-        <minPower Value="100"/>
-        <maxPower Value="100"/>
+        <minPower Value="90"/>
+        <maxPower Value="90"/>
         <maxPower2 Value="20"/>
-        <speed Value="5.08"/>
+        <speed Value="4"/>
         <dotTime Value="1"/>
         <dotSpacing Value="0.0004"/>
         <overscan Value="0"/>
@@ -82,7 +82,7 @@
             <Shape Type="Ellipse" CutIndex="0" Rx="1.778" Ry="1.778">
                 <XForm>-1.31134e-07 -1 1 -1.31134e-07 372.004 182.36</XForm>
             </Shape>
-            <Shape Type="Path" CutIndex="0" VertID="7">
+            <Shape Type="Path" CutIndex="0" VertID="7" PrimID="2">
                 <XForm>-1.31134e-07 -1 1 -1.31134e-07 165.874 250.009</XForm>
                 <VertList>V-13.515965 395.33957c0x-66.121086c0y395.33957c1x1V-108.76596 300.08957c0x1c1x-108.76595c1y352.6947V-108.76596 68.187569c0x-108.76596c0y15.582451c1x1V-13.515965 -27.062426c0x1c1x-66.121094c1y-27.062416V13.408035 -27.062426c0x66.013153c0y-27.062424c1x1V108.65804 68.187569c0x1c1x108.65804c1y15.582447V108.65804 300.08957c0x108.65803c0y352.6947c1x1V13.408035 395.33957c0x1c1x66.013161c1y395.33957</VertList>
                 <PrimList>B0 1L1 2B2 3L3 4B4 5L5 6B6 7L7 0</PrimList>
@@ -152,7 +152,7 @@
                 <VertList>V27.940001 195.707c0x21.557245c0y195.707c1x1V16.382999 184.14999c0x16.383003c0y177.76723c1x16.382999c1y190.53275V27.940001 172.593c0x1c1x21.557251c1y172.59299V40.639999 172.593c0x47.022755c0y172.593c1x1V52.196999 184.14999c0x52.196999c0y190.53275c1x52.196999c1y177.76724V40.639999 195.707c0x1c1x47.022755c1y195.70699</VertList>
                 <PrimList>B0 1B1 2L2 3B3 4B4 5L5 0</PrimList>
             </Shape>
-            <Shape Type="Path" CutIndex="0" VertID="10">
+            <Shape Type="Path" CutIndex="0" VertID="10" PrimID="0">
                 <XForm>-1.31134e-07 -1 1 -1.31134e-07 165.874 250.009</XForm>
                 <VertList>V57.536999 198.12981c0x1c1x58.378677c1y198.12982V44.837002 198.12981c0x43.995323c0y198.12982c1x1V43.313007 199.65381c0x43.313007c0y200.49548c1x43.313007c1y198.81213V44.837002 201.1778c0x1c1x43.995323c1y201.1778V57.536999 201.1778c0x58.378677c0y201.1778c1x1V59.060993 199.65381c0x59.060993c0y198.81213c1x59.060993c1y200.49548</VertList>
                 <PrimList>L0 1B1 2B2 3L3 4B4 5B5 0</PrimList>
