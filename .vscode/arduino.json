@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "output": ".arduino/output",
-    "sketch": "test tools/esp32testserver/esp32testserver.ino"
+    "sketch": "test tools/motor-test/motor-test.ino"
 }

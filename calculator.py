@@ -15,23 +15,19 @@ import threading
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
 POLAR_RADIUS_FEET = 20855567.585
-
 # Initialize status variables
 statA = False
 statB = False
-
 # Initialize global variables
 Distances = 0.0
 Altitude = 0.0
 Azimuth = 0.0
-
 alt_A = 0
 lat_A = 0
 long_A = 0
 alt_B = 0
 lat_B = 0
 long_B = 0
-
 # Initialize status variables
 stat_alt_A = 0
 stat_lat_A = 0
@@ -41,12 +37,12 @@ stat_lat_B = 0
 stat_long_B = 0
 statA = False
 statB = False
-
 # Initialize the 'sat' list outside the 'newport' function
 sat = ["none"]
 stat = bytes("@ GPS_STAT", encoding="latin-1")
 # Define the 'com' list at the global scope
 com = ["Select Port"]
+
 
 def parse_angle(angle_str, limit):
     """
@@ -69,7 +65,8 @@ def parse_angle(angle_str, limit):
     except ValueError:
         print("Invalid angle value. Please enter a numeric value.")
         return None
-    
+
+
 def parse_elevation(elevation_str):
     """
     Parses the given elevation string and returns the elevation in feet.
@@ -90,6 +87,7 @@ def parse_elevation(elevation_str):
     except ValueError:
         print("Invalid elevation value. Please enter a numeric value.")
         return None
+
 
 def parse_location(lati, long, alt):
     """
@@ -113,10 +111,11 @@ def parse_location(lati, long, alt):
         if lon is not None:
             elv = parse_elevation(elv_str)
             if elv is not None:
-                location = {'lat': lat, 'lon': lon, 'elv': elv}
+                location = {"lat": lat, "lon": lon, "elv": elv}
                 print(location)
                 return location
     return None
+
 
 def earth_radius_in_feet(latitude_radians):
     """
@@ -138,6 +137,7 @@ def earth_radius_in_feet(latitude_radians):
     t4 = b * sin
     return math.sqrt((t1 * t1 + t2 * t2) / (t3 * t3 + t4 * t4))
 
+
 def geocentric_latitude(lat):
     """
     Calculates the geocentric latitude from the given geodetic latitude.
@@ -152,6 +152,7 @@ def geocentric_latitude(lat):
     clat = math.atan((1.0 - e2) * math.tan(lat))
     return clat
 
+
 def location_to_point(c):
     """
     Converts a location on Earth to a point in 3D space.
@@ -162,8 +163,8 @@ def location_to_point(c):
     Returns:
         dict: A dictionary containing the x, y, and z coordinates of the point, as well as the radius of the Earth at that location and the normal vector of the point.
     """
-    lat = c['lat'] * math.pi / 180.0
-    lon = c['lon'] * math.pi / 180.0
+    lat = c["lat"] * math.pi / 180.0
+    lon = c["lon"] * math.pi / 180.0
     radius = earth_radius_in_feet(lat)
     clat = geocentric_latitude(lat)
     cos_lon = math.cos(lon)
@@ -178,10 +179,11 @@ def location_to_point(c):
     nx = cos_glat * cos_lon
     ny = cos_glat * sin_lon
     nz = sin_glat
-    x += c['elv'] * nx
-    y += c['elv'] * ny
-    z += c['elv'] * nz
-    return {'x': x, 'y': y, 'z': z, 'radius': radius, 'nx': nx, 'ny': ny, 'nz': nz}
+    x += c["elv"] * nx
+    y += c["elv"] * ny
+    z += c["elv"] * nz
+    return {"x": x, "y": y, "z": z, "radius": radius, "nx": nx, "ny": ny, "nz": nz}
+
 
 def distance(ap, bp):
     """
@@ -194,10 +196,11 @@ def distance(ap, bp):
     Returns:
         float: The Euclidean distance between the two points.
     """
-    dx = ap['x'] - bp['x']
-    dy = ap['y'] - bp['y']
-    dz = ap['z'] - bp['z']
+    dx = ap["x"] - bp["x"]
+    dy = ap["y"] - bp["y"]
+    dz = ap["z"] - bp["z"]
     return math.sqrt(dx * dx + dy * dy + dz * dz)
+
 
 def rotate_globe(b, a, bradius, aradius):
     """
@@ -212,15 +215,16 @@ def rotate_globe(b, a, bradius, aradius):
     Returns:
         dict: A dictionary representing the rotated point, with keys 'x', 'y', 'z', and 'radius'.
     """
-    br = {'lat': b['lat'], 'lon': (b['lon'] - a['lon']), 'elv': b['elv']}
+    br = {"lat": b["lat"], "lon": (b["lon"] - a["lon"]), "elv": b["elv"]}
     brp = location_to_point(br)
-    alat = geocentric_latitude(-a['lat'] * math.pi / 180.0)
+    alat = geocentric_latitude(-a["lat"] * math.pi / 180.0)
     acos = math.cos(alat)
     asin = math.sin(alat)
-    bx = (brp['x'] * acos) - (brp['z'] * asin)
-    by = brp['y']
-    bz = (brp['x'] * asin) + (brp['z'] * acos)
-    return {'x': bx, 'y': by, 'z': bz, 'radius': bradius}
+    bx = (brp["x"] * acos) - (brp["z"] * asin)
+    by = brp["y"]
+    bz = (brp["x"] * asin) + (brp["z"] * acos)
+    return {"x": bx, "y": by, "z": bz, "radius": bradius}
+
 
 def normalize_vector_diff(b, a):
     """
@@ -235,14 +239,15 @@ def normalize_vector_diff(b, a):
               The 'x', 'y', and 'z' keys represent the normalized vector components, and the 'radius' key represents the magnitude of the vector.
               Returns None if the two points are the same.
     """
-    dx = b['x'] - a['x']
-    dy = b['y'] - a['y']
-    dz = b['z'] - a['z']
+    dx = b["x"] - a["x"]
+    dy = b["y"] - a["y"]
+    dz = b["z"] - a["z"]
     dist2 = dx * dx + dy * dy + dz * dz
     if dist2 == 0:
         return None
     dist = math.sqrt(dist2)
-    return {'x': (dx / dist), 'y': (dy / dist), 'z': (dz / dist), 'radius': 1.0}
+    return {"x": (dx / dist), "y": (dy / dist), "z": (dz / dist), "radius": 1.0}
+
 
 def calculate(lat_A, long_A, alt_A, lat_B, long_B, alt_B):
     a = parse_location(lat_A, long_A, alt_A)
@@ -256,9 +261,9 @@ def calculate(lat_A, long_A, alt_A, lat_B, long_B, alt_B):
             altitude_deg = None
 
             # Calculate azimuth
-            br = rotate_globe(b, a, bp['radius'], ap['radius'])
-            if br['z'] * br['z'] + br['y'] * br['y'] > 1.0e-6:
-                theta = math.atan2(br['z'], br['y']) * 180.0 / math.pi
+            br = rotate_globe(b, a, bp["radius"], ap["radius"])
+            if br["z"] * br["z"] + br["y"] * br["y"] > 1.0e-6:
+                theta = math.atan2(br["z"], br["y"]) * 180.0 / math.pi
                 azimuth = 90.0 - theta
                 if azimuth < 0.0:
                     azimuth += 360.0
@@ -267,7 +272,9 @@ def calculate(lat_A, long_A, alt_A, lat_B, long_B, alt_B):
             # Calculate altitude
             bma = normalize_vector_diff(bp, ap)
             if bma is not None:
-                altitude = 90.0 - (180.0 / math.pi) * math.acos(bma['x'] * ap['nx'] + bma['y'] * ap['ny'] + bma['z'] * ap['nz'])
+                altitude = 90.0 - (180.0 / math.pi) * math.acos(
+                    bma["x"] * ap["nx"] + bma["y"] * ap["ny"] + bma["z"] * ap["nz"]
+                )
                 altitude_deg = altitude
 
             print("Results:")
@@ -284,6 +291,7 @@ def calculate(lat_A, long_A, alt_A, lat_B, long_B, alt_B):
                 Altitude = altitude_deg
                 print(f"Altitude: {altitude_deg:.4f}°")
 
+
 def newport():
     """
     Lists all available serial ports and returns a list of their names.
@@ -296,54 +304,12 @@ def newport():
     com = ["Select Port"]
     for i, port in enumerate(ports):
         print(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
-        com.append(f"{i + 1}: Serial Port: {port.device}, Description: {port.description}")
+        com.append(
+            f"{i + 1}: Serial Port: {port.device}, Description: {port.description}"
+        )
     return com  # Return the list of available serial ports
 
-class Example(wx.Frame):
-    """
-    A class that represents the main window of the Antenna Tracker application.
 
-    Attributes:
-    alt_A (int): The altitude of point A.
-    lat_A (int): The latitude of point A.
-    long_A (int): The longitude of point A.
-    alt_B (int): The altitude of point B.
-    lat_B (int): The latitude of point B.
-    long_B (int): The longitude of point B.
-    ser (serial.Serial): The serial port object for the ground station.
-    ser_feather (serial.Serial): The serial port object for the Featherweight GPS.
-    com (list): A list of available serial ports.
-    """
-
-    def __init__(self, ser, ser_feather, com, *args, **kw):
-        """
-        Initializes the Example object.
-
-        Parameters:
-        ser (serial.Serial): The serial port object for the ground station.
-        ser_feather (serial.Serial): The serial port object for the Featherweight GPS.
-        com (list): A list of available serial ports.
-        *args: Variable length argument list.
-        **kw: Arbitrary keyword arguments.
-        """
-        super(Example, self).__init__(*args, **kw)
-        self.alt_A = 0
-        self.lat_A = 0
-        self.long_A = 0
-        self.alt_B = 0
-        self.lat_B = 0
-        self.long_B = 0
-        self.ser = ser
-        self.ser_feather = ser_feather
-        self.com = com
-
-        self.InitUI()
-
-    def InitUI(self):
-        """
-        Initializes the user interface of the Antenna Tracker application.
-        """
-        # UI code goes here
 class Example(wx.Frame):
     def __init__(self, ser, ser_feather, com, *args, **kw):
         super(Example, self).__init__(*args, **kw)
@@ -356,11 +322,8 @@ class Example(wx.Frame):
         self.ser = ser
         self.ser_feather = ser_feather
         self.com = com
-
         self.InitUI()
-        
         # Rescan for serial ports
-
 
     """
     This module contains a class that initializes the user interface for an Antenna Tracker application. 
@@ -368,29 +331,31 @@ class Example(wx.Frame):
     The class also defines methods to handle user interactions with the widgets, such as selecting a serial port, 
     checking/unchecking a checkbox, entering text in a TextCtrl, clicking a button, and closing the application. 
     """
+
     def InitUI(self):
-        font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        font = wx.Font(
+            24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL
+        )
         pnl = wx.Panel(self)
-       
-        
         newport()
-        self.Ground = wx.ComboBox(pnl, pos=(20, 30), choices=self.com, style=wx.CB_READONLY)
+        self.Ground = wx.ComboBox(
+            pnl, pos=(20, 30), choices=self.com, style=wx.CB_READONLY
+        )
         self.Ground.Bind(wx.EVT_COMBOBOX, self.select_serial_port)
 
-        self.Feather = wx.ComboBox(pnl, pos=(20, 80), choices=self.com, style=wx.CB_READONLY)
+        self.Feather = wx.ComboBox(
+            pnl, pos=(20, 80), choices=self.com, style=wx.CB_READONLY
+        )
         self.Feather.Bind(wx.EVT_COMBOBOX, self.OnFeather)
-        self.staticA = wx.CheckBox(pnl, label='Static', pos=(150, 10))
+        self.staticA = wx.CheckBox(pnl, label="Static", pos=(150, 10))
         self.staticA.Bind(wx.EVT_CHECKBOX, self.OnStaticA)
-        self.staticB = wx.CheckBox(pnl, label='Static', pos=(150, 60))
+        self.staticB = wx.CheckBox(pnl, label="Static", pos=(150, 60))
         self.staticB.Bind(wx.EVT_CHECKBOX, self.OnStaticB)
-       
-
-        self.Ground = wx.StaticText(pnl, label='', pos=(20, 140))
-        self.Feather = wx.StaticText(pnl, label='', pos=(20, 160))
+        self.Ground = wx.StaticText(pnl, label="", pos=(20, 140))
+        self.Feather = wx.StaticText(pnl, label="", pos=(20, 160))
         self.SetSize((800, 400))
-        self.SetTitle('Antenna Tracker')
-
-        wx.StaticText(self, label='Ground Station', pos=(25, 10))
+        self.SetTitle("Antenna Tracker")
+        wx.StaticText(self, label="Ground Station", pos=(25, 10))
         wx.StaticText(pnl, label="Lat:", pos=(220, 10))
         wx.StaticText(pnl, label="Long:", pos=(400, 10))
         wx.StaticText(pnl, label="Elv:", pos=(580, 10))
@@ -400,8 +365,7 @@ class Example(wx.Frame):
         self.latitude_textA.SetHint("Enter Latitude")
         self.Altitude_textA = wx.TextCtrl(pnl, pos=(610, 6), size=(120, -1))
         self.Altitude_textA.SetHint("Enter Altitude")
-
-        wx.StaticText(self, label='Featherweight GPS', pos=(25, 60))
+        wx.StaticText(self, label="Featherweight GPS", pos=(25, 60))
         wx.StaticText(pnl, label="Lat:", pos=(220, 60))
         wx.StaticText(pnl, label="Long:", pos=(400, 60))
         wx.StaticText(pnl, label="Elv:", pos=(580, 60))
@@ -417,81 +381,79 @@ class Example(wx.Frame):
         self.latitude_textB.Bind(wx.EVT_TEXT, self.OnInputChange)
         self.longitude_textB.Bind(wx.EVT_TEXT, self.OnInputChange)
         self.Altitude_textB.Bind(wx.EVT_TEXT, self.OnInputChange)
-
-        self.GroundStation = wx.StaticText(pnl, label='', pos=(540, 280))
-        self.DistanceLabel = wx.StaticText(pnl, label='', pos=(540, 280))
+        self.GroundStation = wx.StaticText(pnl, label="", pos=(540, 280))
+        self.DistanceLabel = wx.StaticText(pnl, label="", pos=(540, 280))
         self.DistanceLabel.SetFont(font)
-        self.AzimuthLabel = wx.StaticText(pnl, label='', pos=(540, 315))
+        self.AzimuthLabel = wx.StaticText(pnl, label="", pos=(540, 315))
         self.AzimuthLabel.SetFont(font)
-        self.AltitudeLabel = wx.StaticText(pnl, label='', pos=(540, 350))
+        self.AltitudeLabel = wx.StaticText(pnl, label="", pos=(540, 350))
         self.AltitudeLabel.SetFont(font)
         self.About = wx.Button(self, label="About", pos=(110, 340))
         self.Bind(wx.EVT_BUTTON, self.on_button_click, self.About)
-        btn = wx.Button(self, label='Exit', pos=(20, 340))
+        btn = wx.Button(self, label="Exit", pos=(20, 340))
         self.Home = wx.Button(self, label="Home", pos=(200, 340))
         self.Bind(wx.EVT_BUTTON, self.on_home_click, self.Home)
         self.RescanButton = wx.Button(self, label="Rescan", pos=(290, 340))
         self.Bind(wx.EVT_BUTTON, self.rescan_serial_ports, self.RescanButton)
-
-
         self.Centre()
         self.Show(True)
         btn.Bind(wx.EVT_BUTTON, self.OnClose)
 
     def on_button_click(self, event):
-        wx.MessageBox("Coded By Buckley Wiley\nbuckley@buckleywiley.com\nGTXR Antena Tracker V1.0", "About")
-   
+        wx.MessageBox(
+            "Coded By Buckley Wiley\nbuckley@buckleywiley.com\nGTXR Antena Tracker V1.0",
+            "About",
+        )
+
     def on_home_click(self, event):
         print("Home")
+
     def rescan_serial_ports(self, event):
         available_ports = newport()  # Get the list of available serial ports
-
         # Update the list of available serial ports in the GUI
         self.serial_port_choice.Clear()
         self.serial_port_choice.AppendItems(available_ports)
-
         # If the currently selected serial port is still available, select it
         if self.com in available_ports:
             self.serial_port_choice.SetStringSelection(self.com)
         else:
-            self.com = None  # Clear the selected serial port if it is no longer available
+            self.com = (
+                None  # Clear the selected serial port if it is no longer available
+            )
+
     def parse_data(self):
-            """
-            Parses the serial data received from the GPS module and returns a dictionary containing the parsed data.
+        """
+        Parses the serial data received from the GPS module and returns a dictionary containing the parsed data
+        Returns:
+        dict: A dictionary containing the parsed data with the following keys:
+            - time: The time in the format HH:MM:SS.mmm.
+            - alt: The altitude in meters.
+            - lat: The latitude in decimal degrees.
+            - long: The longitude in decimal degrees.
+            - hvel: The horizontal velocity in meters per second.
+            - hhead: The horizontal heading in degrees.
+            - uvel: The vertical velocity in meters per second.
+        """
+        # If the serial data starts with "@ GPS_STAT", parse the data
+        self.data = ""
+        self.stat = "@ GPS_STAT"
+        parsed_data = {}
+        if self.data.startswith(self.stat):
+            timeindex = self.data.index(":")
+            altindex = self.data.index("Alt")
+            latindex = self.data.index("+")
+            longindex = self.data.index("ln")
+            velindex = self.data.index("Vel")
+            parsed_data["time"] = self.data[timeindex - 2 : timeindex + 9]
+            parsed_data["alt"] = self.data[altindex + 4 : latindex - 4]
+            parsed_data["lat"] = self.data[latindex : longindex - 1]
+            parsed_data["long"] = self.data[longindex + 3 : velindex - 1]
+            parsed_data["hvel"] = self.data[velindex + 4 : velindex + 9]
+            parsed_data["hhead"] = self.data[velindex + 10 : velindex + 14]
+            parsed_data["uvel"] = self.data[velindex + 15 : velindex + 20]
+            # print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
+            return parsed_data
 
-            Returns:
-            dict: A dictionary containing the parsed data with the following keys:
-                - time: The time in the format HH:MM:SS.mmm.
-                - alt: The altitude in meters.
-                - lat: The latitude in decimal degrees.
-                - long: The longitude in decimal degrees.
-                - hvel: The horizontal velocity in meters per second.
-                - hhead: The horizontal heading in degrees.
-                - uvel: The vertical velocity in meters per second.
-            """
-            # If the serial data starts with "@ GPS_STAT", parse the data
-            self.data = ""
-            self.stat = "@ GPS_STAT"
-            parsed_data = {}
-
-            if self.data.startswith(self.stat):
-                timeindex = self.data.index(':')
-                altindex = self.data.index('Alt')
-                latindex = self.data.index('+')
-                longindex = self.data.index('ln')
-                velindex = self.data.index('Vel')
-
-                parsed_data['time'] = self.data[timeindex - 2: timeindex + 9]
-                parsed_data['alt'] = self.data[altindex + 4: latindex - 4]
-                parsed_data['lat'] = self.data[latindex: longindex - 1]
-                parsed_data['long'] = self.data[longindex + 3: velindex - 1]
-                parsed_data['hvel'] = self.data[velindex + 4:velindex + 9]
-                parsed_data['hhead'] = self.data[velindex + 10: velindex + 14]
-                parsed_data['uvel'] = self.data[velindex + 15: velindex + 20]
-                #print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
-                return parsed_data
-
-            
     def update_calculations(self):
         """
         Updates the calculations for the antenna tracker based on the current values of the GUI inputs.
@@ -500,12 +462,11 @@ class Example(wx.Frame):
         Converts the azimuth and altitude values to bytes and sends them over serial.
         """
         parsed_data = self.parse_data()
-
-        self.stat_alt_B = self.Altitude_textB.GetValue()   
-        self.stat_lat_B = self.latitude_textB.GetValue() 
-        self.stat_long_B = self.longitude_textB.GetValue() 
-        self.stat_alt_A = self.Altitude_textA.GetValue()  
-        self.stat_lat_A = self.latitude_textA.GetValue() 
+        self.stat_alt_B = self.Altitude_textB.GetValue()
+        self.stat_lat_B = self.latitude_textB.GetValue()
+        self.stat_long_B = self.longitude_textB.GetValue()
+        self.stat_alt_A = self.Altitude_textA.GetValue()
+        self.stat_lat_A = self.latitude_textA.GetValue()
         self.stat_long_A = self.longitude_textA.GetValue()
         if self.statA:
             self.alt_A = self.stat_alt_A
@@ -519,12 +480,12 @@ class Example(wx.Frame):
             self.lat_B = self.stat_lat_B
             self.long_B = self.stat_long_B
         else:
-            self.alt_B = parsed_data['alt']
-            print(parsed_data['alt'])
-            self.lat_B = parsed_data['lat']
-            print(parsed_data['lat'])
-            self.long_B = parsed_data['long']
-            print(parsed_data['long'])
+            self.alt_B = parsed_data["alt"]
+            print(parsed_data["alt"])
+            self.lat_B = parsed_data["lat"]
+            print(parsed_data["lat"])
+            self.long_B = parsed_data["long"]
+            print(parsed_data["long"])
         alt_A = self.alt_A
         lat_A = self.lat_A
         long_A = self.long_A
@@ -538,9 +499,8 @@ class Example(wx.Frame):
         azimuth_byte = Azimuth
         altitude_byte = Altitude
         # Convert float values to bytes
-        Azimuth_bytes = struct.pack('f',  azimuth_byte)
-        Altitude_bytes = struct.pack('f', altitude_byte)
-
+        Azimuth_bytes = struct.pack("f", azimuth_byte)
+        Altitude_bytes = struct.pack("f", altitude_byte)
         # Send the bytes over serial
         self.ser.write(Altitude_bytes)
         self.ser.write(Azimuth_bytes)
@@ -569,18 +529,20 @@ class Example(wx.Frame):
             self.open_serial_port()
             print(f"Selected Serial Port (Ground Station): {self.selected_serial_port}")
 
-    def read_serial_data(self):
+    def read_serial_data_feather(self):
         """
         Reads the serial data from the Featherweight GPS module and updates the GUI with the new data.
         """
         while self.ser_feather.is_open:
             try:
                 # Read the serial data
-                data = self.ser_feather.readline().decode('utf-8').strip()
+                data = self.ser_feather.readline().decode("utf-8").strip()
                 # Parse the data
                 parsed_data = self.parse_data(data)
                 # Update the GUI with the new data
                 self.update_gui(parsed_data)
+                # Update calculations with new data
+                self.update_calculations()
             except serial.SerialException:
                 print("Serial port closed.")
                 break
@@ -591,7 +553,9 @@ class Example(wx.Frame):
         """
         try:
             self.ser_feather = serial.Serial(self.selected_serial_port_feather, 115200)
-            print(f"Opened Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
+            print(
+                f"Opened Serial Port (Featherweight GPS): {self.selected_serial_port_feather}"
+            )
             # Start a new thread to read the serial data in the background
             self.serial_thread = threading.Thread(target=self.read_serial_data)
             self.serial_thread.daemon = True
@@ -606,7 +570,9 @@ class Example(wx.Frame):
             selected_port_info_feather = ports[selected_index - 1]
             self.selected_serial_port_feather = selected_port_info_feather.device
             self.open_serial_port_feather()
-            print(f"Selected Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
+            print(
+                f"Selected Serial Port (Featherweight GPS): {self.selected_serial_port_feather}"
+            )
 
     def OnStaticA(self, e):
         self.longitude_textA.Enable(self.staticA.GetValue())
@@ -630,7 +596,9 @@ class Example(wx.Frame):
             selected_port_info_feather = ports[selected_index - 1]
             self.selected_serial_port_feather = selected_port_info_feather.device
             self.open_serial_port_feather()
-            print(f"Selected Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
+            print(
+                f"Selected Serial Port (Featherweight GPS): {self.selected_serial_port_feather}"
+            )
             self.rescan_serial_ports(event)  # Call the rescan_serial_ports method
 
     def OnClose(self, e):
@@ -638,20 +606,27 @@ class Example(wx.Frame):
             self.ser.close()
         self.Close(True)
 
+
 def main():
     """
-    Initializes serial ports for communication with the antenna tracker and Feather board, 
+    Initializes serial ports for communication with the antenna tracker and Feather board,
     gets the list of available serial ports, and starts the GUI application.
     """
     selected_serial_port = None
     selected_serial_port_feather = None  # Initialize Feather serial port
     ser = serial.Serial(selected_serial_port, 115200)
-    ser_feather = serial.Serial(selected_serial_port_feather, 115200)  # Pass Feather serial port
+    ser_feather = serial.Serial(
+        selected_serial_port_feather, 115200
+    )  # Pass Feather serial port
     com = newport()  # Get the list of available serial ports
     ex = wx.App()
-    Example(ser, ser_feather, com, None)
+    example = Example(ser, ser_feather, com, None)
+    # Start a separate thread to continuously read data from the Featherweight GPS
+    feather_thread = threading.Thread(target=example.read_serial_data_feather)
+    feather_thread.daemon = True
+    feather_thread.start()
     ex.MainLoop()
-    
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
