@@ -11,6 +11,7 @@ import math
 import serial
 import struct
 import threading
+import os
 
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
@@ -333,6 +334,7 @@ class Example(wx.Frame):
     """
 
     def InitUI(self):
+      
         font = wx.Font(
             24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL
         )
@@ -355,6 +357,10 @@ class Example(wx.Frame):
         self.Feather = wx.StaticText(pnl, label="", pos=(20, 160))
         self.SetSize((800, 400))
         self.SetTitle("Antenna Tracker")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_path = os.path.join(script_dir, "icon.ico")
+        icon = wx.Icon(icon_path, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(icon)
         wx.StaticText(self, label="Ground Station", pos=(25, 10))
         wx.StaticText(pnl, label="Lat:", pos=(220, 10))
         wx.StaticText(pnl, label="Long:", pos=(400, 10))
@@ -398,7 +404,22 @@ class Example(wx.Frame):
         self.Centre()
         self.Show(True)
         btn.Bind(wx.EVT_BUTTON, self.OnClose)
-
+        self.logos()
+    def logos(self):
+        logo_image1 = wx.Image("Assets/wileyind.png", wx.BITMAP_TYPE_PNG)
+        new_height1 = int(self.GetSize().y / 10)
+        new_width1 = int(logo_image1.GetWidth() * new_height1 / logo_image1.GetHeight())
+        logo_image1 = logo_image1.Rescale(new_width1, new_height1, quality=wx.IMAGE_QUALITY_HIGH).ConvertToBitmap()
+        logo1 = wx.StaticBitmap(self, -1, logo_image1, (0, 0), (new_width1, new_height1))
+        logo_position1 = wx.Point(self.GetSize().x - new_width1 - 80, self.GetSize().y - new_height1 - 32)
+        logo1.Move(logo_position1)
+        logo_image2 = wx.Image("Assets/GTXR RING LOGO.png", wx.BITMAP_TYPE_PNG)
+        new_height2 = int(self.GetSize().y / 7)
+        new_width2 = int(logo_image2.GetWidth() * new_height2 / logo_image2.GetHeight())
+        logo_image2 = logo_image2.Rescale(new_width2, new_height2, quality=wx.IMAGE_QUALITY_HIGH).ConvertToBitmap()
+        logo2 = wx.StaticBitmap(self, -1, logo_image2, (0, 0), (new_width2, new_height2))
+        logo_position2 = wx.Point(self.GetSize().x - new_width2 - 10, self.GetSize().y - new_height2 - 32)
+        logo2.Move(logo_position2)
     def on_button_click(self, event):
         wx.MessageBox(
             "Coded By Buckley Wiley\nbuckley@buckleywiley.com\nGTXR Antena Tracker V1.0",
@@ -504,7 +525,6 @@ class Example(wx.Frame):
         # Send the bytes over serial
         self.ser.write(Altitude_bytes)
         self.ser.write(Azimuth_bytes)
-
     def open_serial_port(self):
         if self.selected_serial_port is not None:
             try:
