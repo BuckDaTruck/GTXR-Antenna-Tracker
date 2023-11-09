@@ -11,7 +11,7 @@ import math
 import serial
 import struct
 import threading
-import os
+
 
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
@@ -357,8 +357,7 @@ class Example(wx.Frame):
         self.Feather = wx.StaticText(pnl, label="", pos=(20, 160))
         self.SetSize((800, 400))
         self.SetTitle("Antenna Tracker")
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        icon_path = os.path.join(script_dir, "icon.ico")
+        icon_path =  ("icon.ico")
         icon = wx.Icon(icon_path, wx.BITMAP_TYPE_ICO)
         self.SetIcon(icon)
         wx.StaticText(self, label="Ground Station", pos=(25, 10))
