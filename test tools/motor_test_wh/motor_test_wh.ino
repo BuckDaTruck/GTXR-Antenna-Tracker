@@ -1,6 +1,6 @@
 #include <CNCShield.h>
 
-#define NO_OF_STEPS 800
+#define NO_OF_STEPS 8000
 #define SLEEP_BETWEEN_STEPS_MS 1.7
 #define SPEED_STEPS_PER_SECOND 300
 const int buttonTilt = 9;

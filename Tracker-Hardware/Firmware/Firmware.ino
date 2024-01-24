@@ -1,7 +1,7 @@
 
 #include <CNCShield.h>
 
-#define NO_OF_STEPS 800
+#define NO_OF_STEPS 8000
 #define SLEEP_BETWEEN_STEPS_MS 1.7
 #define SPEED_STEPS_PER_SECOND 300
 const int buttonTilt = 9;  // Pin for tilt limit switch
@@ -85,17 +85,26 @@ void loop() {
 }
 void moveMotorsToAngle(int panAngle, int tiltAngle) {
   // Calculate steps from angles
-  if (panAngle > 340) {
+  /*if (panAngle > 340) {
     panAngle = 340;
   }
   if (tiltAngle > 180) {
     tiltAngle = 180;
   }
+  */
   int targetPanSteps = map(panAngle, 0, 360, 0, NO_OF_STEPS);
   int targetTiltSteps = map(tiltAngle, 0, 360, 0, NO_OF_STEPS);
-if(currentPanPosition>targetPanSteps){
-  
-}
+  if (currentPanPosition < targetPanSteps) {
+    motorPan->set_dir(COUNTER);
+  } else if (currentPanPosition > targetPanSteps) {
+    motorPan->set_dir(CLOCKWISE);
+  }
+    if (currentTiltPosition < targetTiltSteps) {
+    motorTilt->set_dir(COUNTER);
+  } else if (currentTiltPosition > targetTiltSteps) {
+    motorTilt->set_dir(CLOCKWISE);
+  }
+
   // Calculate difference from current position
   int panStepDiff = targetPanSteps - currentPanPosition;
   int tiltStepDiff = targetTiltSteps - currentTiltPosition;
