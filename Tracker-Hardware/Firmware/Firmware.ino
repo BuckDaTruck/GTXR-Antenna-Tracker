@@ -61,6 +61,7 @@ void loop() {
       int separatorIndex = command.indexOf(' ');
       int panAngle = command.substring(1, separatorIndex).toInt();
       int tiltAngle = command.substring(separatorIndex + 1).toInt();
+      Serial.println("Angles Pan" + panAngle.toString() + "Tilt" + tiltAngle.toString());
       moveMotorsToAngle(panAngle, tiltAngle);
     } else if (command.startsWith("H")) {
       Serial.println("homing!");
@@ -99,7 +100,7 @@ void moveMotorsToAngle(int panAngle, int tiltAngle) {
   } else if (currentPanPosition > targetPanSteps) {
     motorPan->set_dir(CLOCKWISE);
   }
-    if (currentTiltPosition < targetTiltSteps) {
+  if (currentTiltPosition < targetTiltSteps) {
     motorTilt->set_dir(COUNTER);
   } else if (currentTiltPosition > targetTiltSteps) {
     motorTilt->set_dir(CLOCKWISE);
