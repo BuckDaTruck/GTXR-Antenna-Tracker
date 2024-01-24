@@ -587,9 +587,7 @@ class Example(wx.Frame):
             self.ser_feather = serial.Serial(self.selected_serial_port_feather, 115200)
             print(f"Opened Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
             # Start a new thread to read the serial data in the background
-            self.serial_thread = threading.Thread(target=self.read_serial_data_feather)
-            self.serial_thread.daemon = True
-            self.serial_thread.start()
+            self.read_serial_data_feather
         except serial.SerialException:
             print("Failed to open serial port.")
 
@@ -641,12 +639,15 @@ def main():
     selected_serial_port_feather = None  # Initialize Feather serial port
     ser = serial.Serial(selected_serial_port, 115200)
     ser_feather = serial.Serial(selected_serial_port_feather, 115200)  # Pass Feather serial port
-    Example.read_serial_data()
+    #read_serial_data()
     com = newport()  # Get the list of available serial ports
     ex = wx.App()
     Example(ser, ser_feather, com, None)
     ex.MainLoop()
-    
+
+if __name__ == '__main__':
+    main()
+
 
 if __name__ == '__main__':
     main()
