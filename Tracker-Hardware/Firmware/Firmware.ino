@@ -1,9 +1,9 @@
 
 #include <CNCShield.h>
 
-#define NO_OF_STEPS 8000
-#define SLEEP_BETWEEN_STEPS_MS 1.7
-#define SPEED_STEPS_PER_SECOND 300
+#define NO_OF_STEPS 6000
+#define SLEEP_BETWEEN_STEPS_MS 3
+#define SPEED_STEPS_PER_SECOND 475
 const int buttonTilt = 9;  // Pin for tilt limit switch
 const int buttonPan = 10;  // Pin for pan limit switch
 bool stopTilt = false;
@@ -48,7 +48,10 @@ void home() {
       stopTilt = true;
     }
   }
-
+  stopTilt = false;
+  stopPan = false;
+  tiltState = 1;
+  PanState = 1;
   // Reset positions
   currentPanPosition = 0;
   currentTiltPosition = 0;
@@ -86,13 +89,13 @@ void loop() {
 }
 void moveMotorsToAngle(int panAngle, int tiltAngle) {
   // Calculate steps from angles
-  /*if (panAngle > 340) {
+  if (panAngle > 340) {
     panAngle = 340;
   }
-  if (tiltAngle > 180) {
-    tiltAngle = 180;
+  if (tiltAngle > 90) {
+    tiltAngle = 90;
   }
-  */
+  
   int targetPanSteps = map(panAngle, 0, 360, 0, NO_OF_STEPS);
   int targetTiltSteps = map(tiltAngle, 0, 360, 0, NO_OF_STEPS);
   if (currentPanPosition < targetPanSteps) {
@@ -107,13 +110,13 @@ void moveMotorsToAngle(int panAngle, int tiltAngle) {
   }
 
   // Calculate difference from current position
-  int panStepDiff = targetPanSteps - currentPanPosition;
-  int tiltStepDiff = targetTiltSteps - currentTiltPosition;
+  int panStepDiff = abs(targetPanSteps - currentPanPosition);
+  int tiltStepDiff = abs(targetTiltSteps - currentTiltPosition);
 
   // Move motors
   motorPan->set_speed(SPEED_STEPS_PER_SECOND);
-  motorPan->step(panStepDiff);
   motorTilt->set_speed(SPEED_STEPS_PER_SECOND);
+  motorPan->step(panStepDiff);
   motorTilt->step(tiltStepDiff);
 
   // Update current positions
