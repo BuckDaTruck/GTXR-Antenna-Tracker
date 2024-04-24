@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "output": ".arduino/output",
-    "sketch": "test tools/Feather_weight_gps_stat_emulator/Feather_weight_gps_stat_emulator.ino"
+    "sketch": "test tools/esp32servotest/esp32servotest.ino"
 }

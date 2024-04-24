@@ -4,6 +4,9 @@ import math
 import serial
 import struct
 import threading
+import pynmea2
+#/usr/local/bin/python3 -m pip install /usr/local/bin/python3 -m pip install serial
+
 
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
@@ -448,41 +451,28 @@ class Example(wx.Frame):
             self.serial_port_choice.SetStringSelection(self.com)
         else:
             self.com = None  # Clear the selected serial port if it is no longer available
-    def parse_data(self):
-            """
-            Parses the serial data received from the GPS module and returns a dictionary containing the parsed data.
+    
 
-            Returns:
-            dict: A dictionary containing the parsed data with the following keys:
-                - time: The time in the format HH:MM:SS.mmm.
-                - alt: The altitude in meters.
-                - lat: The latitude in decimal degrees.
-                - long: The longitude in decimal degrees.
-                - hvel: The horizontal velocity in meters per second.
-                - hhead: The horizontal heading in degrees.
-                - uvel: The vertical velocity in meters per second.
-            """
-            # If the serial data starts with "@ GPS_STAT", parse the data
-            self.data = ""
-            self.stat = "@ GPS_STAT"
-            parsed_data = {}
+    def parse_data(self, data):
+        """
+        Parses the NMEA GPS data and returns a dictionary containing the parsed data.
 
-            if self.data.startswith(self.stat):
-                timeindex = self.data.index(':')
-                altindex = self.data.index('Alt')
-                latindex = self.data.index('+')
-                longindex = self.data.index('ln')
-                velindex = self.data.index('Vel')
+        Returns:
+        dict: A dictionary containing the parsed data with the following keys:
+            - lat: The latitude in decimal degrees.
+            - lon: The longitude in decimal degrees.
+            - alt: The altitude in meters.
+        """
+        parsed_data = {}
 
-                parsed_data['time'] = self.data[timeindex - 2: timeindex + 9]
-                parsed_data['alt'] = self.data[altindex + 4: latindex - 4]
-                parsed_data['lat'] = self.data[latindex: longindex - 1]
-                parsed_data['long'] = self.data[longindex + 3: velindex - 1]
-                parsed_data['hvel'] = self.data[velindex + 4:velindex + 9]
-                parsed_data['hhead'] = self.data[velindex + 10: velindex + 14]
-                parsed_data['uvel'] = self.data[velindex + 15: velindex + 20]
-                #print("Alt", self.alt, "Lat", self.lat, "Long", self.long, "Hvel", self.hvel, "Hhead", self.hhead, "Uvel", self.uvel)
-                return parsed_data
+        if data.startswith('$GPGGA'):  
+            msg = pynmea2.parse(data)
+            parsed_data['time'] = msg.timestamp
+            parsed_data['lat'] = msg.latitude
+            parsed_data['lon'] = msg.longitude
+            parsed_data['alt'] = msg.altitude
+
+        return parsed_data
 
             
     def update_calculations(self):
@@ -587,9 +577,7 @@ class Example(wx.Frame):
             self.ser_feather = serial.Serial(self.selected_serial_port_feather, 115200)
             print(f"Opened Serial Port (Featherweight GPS): {self.selected_serial_port_feather}")
             # Start a new thread to read the serial data in the background
-            self.serial_thread = threading.Thread(target=self.read_serial_data_feather)
-            self.serial_thread.daemon = True
-            self.serial_thread.start()
+            self.read_serial_data_feather
         except serial.SerialException:
             print("Failed to open serial port.")
 
@@ -641,12 +629,13 @@ def main():
     selected_serial_port_feather = None  # Initialize Feather serial port
     ser = serial.Serial(selected_serial_port, 115200)
     ser_feather = serial.Serial(selected_serial_port_feather, 115200)  # Pass Feather serial port
-    Example.read_serial_data()
+    #read_serial_data()
     com = newport()  # Get the list of available serial ports
     ex = wx.App()
     Example(ser, ser_feather, com, None)
     ex.MainLoop()
-    
 
 if __name__ == '__main__':
     main()
+
+

@@ -29,8 +29,16 @@ void setup() {
 }
 
 void home() {
+   motorPan->set_dir(COUNTER);
+  motorTilt->set_dir(COUNTER);
+  motorPan->set_speed(SPEED_STEPS_PER_SECOND);
+  motorTilt->set_speed(SPEED_STEPS_PER_SECOND);
+  motorPan->step(125);
+  motorTilt->step(125);
+
   motorPan->set_dir(CLOCKWISE);
   motorTilt->set_dir(CLOCKWISE);
+
   while (stopPan == false) {
     int panState = digitalRead(buttonPan);
     motorPan->step();
@@ -55,6 +63,7 @@ void home() {
   // Reset positions
   currentPanPosition = 0;
   currentTiltPosition = 0;
+  moveMotorsToAngle(10, 15);
 }
 void loop() {
   if (Serial.available()) {  //example command for this sentax "M3 175" 3 degree pan 175 tilt

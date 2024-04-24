@@ -5,6 +5,8 @@ import serial
 import struct
 import threading
 import pynmea2
+#/usr/local/bin/python3 -m pip install /usr/local/bin/python3 -m pip install serial
+
 
 # Define constants for radius values
 EQUATORIAL_RADIUS_FEET = 20925721.785
